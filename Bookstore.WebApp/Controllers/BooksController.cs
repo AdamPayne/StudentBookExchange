@@ -10,7 +10,7 @@ namespace Bookstore.WebApp.Controllers
         public ActionResult Index()
         {
             var bookService = new BookListingService(this.Server);
-            var books = bookService.GetBookListingViews();
+            var books = bookService.GetBookListingModels();
 
             return View(books);
         }
@@ -24,7 +24,7 @@ namespace Bookstore.WebApp.Controllers
         [ActionName("Submit")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult SubmitPost(SubmitBookViewModel model)
+        public ActionResult SubmitPost(BookListingSubmissionModel model)
         {
             if (!this.ModelState.IsValid)
             {

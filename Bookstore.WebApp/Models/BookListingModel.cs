@@ -5,7 +5,7 @@ using System.Web;
 
 namespace Bookstore.WebApp.Models
 {
-    public class BookViewModel
+    public class BookListingModel
     {
         public string BookId
         {

@@ -21,15 +21,15 @@ namespace Bookstore.WebApp.Services
             this.server = server;
         }
 
-        public IEnumerable<BookViewModel> GetBookListingViews()
+        public IEnumerable<BookListingModel> GetBookListingModels()
         {
             var listings = this.GetBookListings().OrderByDescending(l => l.PublishedOn);
-            var books = new List<BookViewModel>();
+            var books = new List<BookListingModel>();
             var imagePath = ConfigurationManager.AppSettings["DataFolderRelativePath"] + "images/";
 
             foreach (var listing in listings)
             {
-                var viewModel = new BookViewModel();
+                var viewModel = new BookListingModel();
                 viewModel.BookDescription = listing.Description;
                 viewModel.BookId = listing.Id;
                 viewModel.BookTitle = listing.Title;

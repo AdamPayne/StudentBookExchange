@@ -6,7 +6,7 @@ using System.Web;
 
 namespace Bookstore.WebApp.Models
 {
-    public class SubmitBookViewModel
+    public class BookListingSubmissionModel
     {
         [Required]
         [Display(Name = "Book title")]
