@@ -29,12 +29,10 @@ namespace Bookstore.WebApp.Services
 
             foreach (var listing in listings)
             {
-                var viewModel = new BookListingModel();
-                viewModel.BookDescription = listing.Description;
-                viewModel.BookId = listing.Id;
-                viewModel.BookTitle = listing.Title;
-                viewModel.Price = listing.Price;
+                // Create model for page
+                var viewModel = BookListingModel.FromListing(listing);
 
+                // Set image URLs
                 if (listing.ImageId != null)
                 {
                     viewModel.ImageThumbnailUrl = imagePath + listing.ImageId + "_thumb.jpg";

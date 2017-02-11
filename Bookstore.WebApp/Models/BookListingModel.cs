@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bookstore.WebApp.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -41,6 +42,17 @@ namespace Bookstore.WebApp.Models
         {
             get;
             set;
+        }
+
+        public static BookListingModel FromListing(BookListing listing)
+        {
+            var viewModel = new BookListingModel();
+            viewModel.BookDescription = listing.Description;
+            viewModel.BookId = listing.Id;
+            viewModel.BookTitle = listing.Title;
+            viewModel.Price = Math.Round(listing.Price, 2);
+
+            return viewModel;
         }
     }
 }

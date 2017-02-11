@@ -22,29 +22,47 @@ namespace Bookstore.WebApp.Services
 
         public void ProcessImage(Stream imageStream, BookListing listing)
         {
+            // Resize images
+            var thumbnailBytes = this.ResizeImageForThumbnail(imageStream);
+            var newImageBytes = this.ResizeImageForFullImage(imageStream);
+
+            var imageName = Guid.NewGuid().ToString();
+            var imagePath = this.GetImagesPath() + imageName + ".jpg";
+            var thumbnailPath = this.GetImagesPath() + imageName + "_thumb.jpg";
+
+            // Write images to disk
+            Directory.CreateDirectory(this.GetImagesPath());
+            File.WriteAllBytes(imagePath, newImageBytes);
+            File.WriteAllBytes(thumbnailPath, thumbnailBytes);
+
+            // Update BookListing with image name
+            listing.SetImage(imageName);
+        }
+
+        public byte[] ResizeImageForThumbnail(Stream imageStream)
+        {
             var thumbnailResizeSettings = new ResizeSettings();
             thumbnailResizeSettings.Format = "jpg";
             thumbnailResizeSettings.MaxHeight = 500;
             thumbnailResizeSettings.MaxWidth = 300;
             thumbnailResizeSettings.Quality = 80;
 
+            var bytes = this.ResizeImage(imageStream, thumbnailResizeSettings);
+
+            return bytes;
+        }
+
+        public byte[] ResizeImageForFullImage(Stream imageStream)
+        {
             var newImageSettings = new ResizeSettings();
             newImageSettings.Format = "jpg";
             newImageSettings.MaxHeight = 800;
             newImageSettings.MaxWidth = 1200;
             newImageSettings.Quality = 80;
 
-            var thumbnailBytes = this.ResizeImage(imageStream, thumbnailResizeSettings);
-            var newImageBytes = this.ResizeImage(imageStream, newImageSettings);
-            var imageName = Guid.NewGuid().ToString();
-            var imagePath = this.GetImagesPath() + imageName + ".jpg";
-            var thumbnailPath = this.GetImagesPath() + imageName + "_thumb.jpg";
+            var bytes = this.ResizeImage(imageStream, newImageSettings);
 
-            Directory.CreateDirectory(this.GetImagesPath());
-            File.WriteAllBytes(imagePath, newImageBytes);
-            File.WriteAllBytes(thumbnailPath, thumbnailBytes);
-
-            listing.SetImage(imageName);
+            return bytes;
         }
 
         private string GetImagesPath()
