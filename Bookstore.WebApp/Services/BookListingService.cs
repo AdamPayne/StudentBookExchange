@@ -25,7 +25,7 @@ namespace Bookstore.WebApp.Services
         {
             var listings = this.GetBookListings().OrderByDescending(l => l.PublishedOn);
             var books = new List<BookListingModel>();
-            var imagePath = ConfigurationManager.AppSettings["DataFolderRelativePath"] + "images/";
+            var imagePath = "http://127.0.0.1:10000/devstoreaccount1/" + "images/";
 
             foreach (var listing in listings)
             {
@@ -48,15 +48,25 @@ namespace Bookstore.WebApp.Services
         private IEnumerable<BookListing> GetBookListings()
         {
             var listings = new List<BookListing>();
-            var listingPath = this.GetListingsPath();
-            Directory.CreateDirectory(this.GetListingsPath());
-            var allListringFiles = Directory.GetFiles(listingPath, "*.json");
 
-            foreach (var listingFile in allListringFiles)
+            // Connect
+            string connectionString = ConfigurationManager.ConnectionStrings["StorageConnectionString"].ConnectionString;
+            CloudStorageAccount account = CloudStorageAccount.Parse(connectionString);
+            CloudTableClient tableClient = account.CreateCloudTableClient();
+
+            // Get table
+            CloudTable table = tableClient.GetTableReference("bookListing");
+            table.CreateIfNotExists();
+
+            // Generate query
+            TableQuery<BookListingTableEntity> query = new TableQuery<BookListingTableEntity>()
+                .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, "books"));
+
+            var listingsEntity = table.ExecuteQuery(query);
+
+            foreach (var listingEntity in listingsEntity)
             {
-                var jsonText = File.ReadAllText(listingFile);
-                var listing = JsonConvert.DeserializeObject<BookListing>(jsonText);
-
+                BookListing listing = new BookListing(listingEntity.RowKey, listingEntity.Title, listingEntity.Description, listingEntity.Price, listingEntity.PublishedOn, listingEntity.ImageId);
                 listings.Add(listing);
             }
 
@@ -79,12 +89,34 @@ namespace Bookstore.WebApp.Services
 
         public void SaveNewListing(BookListing newListing)
         {
-            var listingsPath = this.GetListingsPath();
-            var filePath = listingsPath + newListing.Id + ".json";
-            Directory.CreateDirectory(listingsPath);
+            string connectionString = ConfigurationManager.ConnectionStrings["StorageConnectionString"].ConnectionString;
+            CloudStorageAccount account = CloudStorageAccount.Parse(connectionString);
+            CloudTableClient tableClient = account.CreateCloudTableClient();
 
-            var json = JsonConvert.SerializeObject(newListing);
-            File.WriteAllText(filePath, json);
+            // Create table
+            CloudTable table = tableClient.GetTableReference("bookListing");
+            table.CreateIfNotExists();
+
+            //Create entity to insert
+            BookListingTableEntity entity = new BookListingTableEntity(newListing.Id);
+            entity.Description = newListing.Description;
+            entity.ImageId = newListing.ImageId;
+            entity.Price = newListing.Price;
+            entity.PublishedOn = newListing.PublishedOn;
+            entity.Title = newListing.Title;
+
+            // Create table operation
+            TableOperation insertOperation = TableOperation.Insert(entity);
+
+            // Execute operation
+            table.Execute(insertOperation);
+
+            //var listingsPath = this.GetListingsPath();
+            //var filePath = listingsPath + newListing.Id + ".json";
+            //Directory.CreateDirectory(listingsPath);
+
+            //var json = JsonConvert.SerializeObject(newListing);
+            //File.WriteAllText(filePath, json);
         }
     }
 }

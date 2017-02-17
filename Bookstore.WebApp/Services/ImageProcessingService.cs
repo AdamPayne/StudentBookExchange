@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using System;
 using System.Configuration;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Web;
 
 namespace Bookstore.WebApp.Services
@@ -31,10 +32,26 @@ namespace Bookstore.WebApp.Services
             var thumbnailPath = this.GetImagesPath() + imageName + "_thumb.jpg";
 
             // Write images to disk
-            Directory.CreateDirectory(this.GetImagesPath());
-            File.WriteAllBytes(imagePath, newImageBytes);
-            File.WriteAllBytes(thumbnailPath, thumbnailBytes);
+            //Directory.CreateDirectory(this.GetImagesPath());
+            //File.WriteAllBytes(imagePath, newImageBytes);
+            //File.WriteAllBytes(thumbnailPath, thumbnailBytes);
 
+            string connectionString = ConfigurationManager.ConnectionStrings["StorageConnectionString"].ConnectionString;
+
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
+            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+
+            // Create container
+            CloudBlobContainer container = blobClient.GetContainerReference("images");
+            container.CreateIfNotExists();
+
+            // Get blob reference
+            CloudBlockBlob thumnailBlob = container.GetBlockBlobReference(imageName + "_thumb.jpg");
+            CloudBlockBlob imageBlob = container.GetBlockBlobReference(imageName + ".jpg");
+
+            // Read image bytes
+            thumnailBlob.UploadFromByteArray(thumbnailBytes, 0, thumbnailBytes.Length);
+            imageBlob.UploadFromByteArray(newImageBytes, 0, newImageBytes.Length);
             // Update BookListing with image name
             listing.SetImage(imageName);
         }
