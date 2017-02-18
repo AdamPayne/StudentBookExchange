@@ -25,7 +25,7 @@ namespace Bookstore.WebApp.Services
         {
             var listings = this.GetBookListings().OrderByDescending(l => l.PublishedOn);
             var books = new List<BookListingModel>();
-            var imagePath = "http://127.0.0.1:10000/devstoreaccount1/" + "images/";
+            var imagePath = ConfigurationManager.AppSettings["ImageContainerURL"]; //"http://127.0.0.1:10000/devstoreaccount1/" + "images/";
 
             foreach (var listing in listings)
             {
@@ -35,8 +35,8 @@ namespace Bookstore.WebApp.Services
                 // Set image URLs
                 if (listing.ImageId != null)
                 {
-                    viewModel.ImageThumbnailUrl = imagePath + listing.ImageId + "_thumb.jpg";
-                    viewModel.ImageFullUrl = imagePath + listing.ImageId + ".jpg";
+                    viewModel.ImageThumbnailUrl = imagePath + "/" + listing.ImageId + "_thumb.jpg";
+                    viewModel.ImageFullUrl = imagePath + "/" + listing.ImageId + ".jpg";
                 }
 
                 books.Add(viewModel);
@@ -55,7 +55,7 @@ namespace Bookstore.WebApp.Services
             CloudTableClient tableClient = account.CreateCloudTableClient();
 
             // Get table
-            CloudTable table = tableClient.GetTableReference("bookListing");
+            CloudTable table = tableClient.GetTableReference("books");
             table.CreateIfNotExists();
 
             // Generate query
@@ -94,7 +94,7 @@ namespace Bookstore.WebApp.Services
             CloudTableClient tableClient = account.CreateCloudTableClient();
 
             // Create table
-            CloudTable table = tableClient.GetTableReference("bookListing");
+            CloudTable table = tableClient.GetTableReference("books");
             table.CreateIfNotExists();
 
             //Create entity to insert

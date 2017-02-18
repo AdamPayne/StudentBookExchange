@@ -26,10 +26,10 @@ namespace Bookstore.WebApp.Services
             // Resize images
             var thumbnailBytes = this.ResizeImageForThumbnail(imageStream);
             var newImageBytes = this.ResizeImageForFullImage(imageStream);
-
             var imageName = Guid.NewGuid().ToString();
-            var imagePath = this.GetImagesPath() + imageName + ".jpg";
-            var thumbnailPath = this.GetImagesPath() + imageName + "_thumb.jpg";
+
+            //var imagePath = this.GetImagesPath() + imageName + ".jpg";
+            //var thumbnailPath = this.GetImagesPath() + imageName + "_thumb.jpg";
 
             // Write images to disk
             //Directory.CreateDirectory(this.GetImagesPath());
@@ -45,6 +45,11 @@ namespace Bookstore.WebApp.Services
             CloudBlobContainer container = blobClient.GetContainerReference("images");
             container.CreateIfNotExists();
 
+            // Change access to Blob
+            BlobContainerPermissions permissions = new BlobContainerPermissions()
+            {
+                PublicAccess = BlobContainerPublicAccessType.Blob
+            };
             // Get blob reference
             CloudBlockBlob thumnailBlob = container.GetBlockBlobReference(imageName + "_thumb.jpg");
             CloudBlockBlob imageBlob = container.GetBlockBlobReference(imageName + ".jpg");
